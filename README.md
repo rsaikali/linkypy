@@ -93,26 +93,24 @@ export INFLUXDB_PASSWORD=password
 
 Only valuable information is stored:
 
-- HCHP: High price hours (heures pleines) values (in kWh).
-- HCHC: Low price hours (heures creuses) values (in kWh).
-- PAPP: Instant power delivered.
+- `HCHP`: High price hours (heures pleines) values (in kWh).
+- `HCHC`: Low price hours (heures creuses) values (in kWh).
+- `PAPP`: Instant power delivered.
 
 Price calculation and estimation for current month will also be stored.
 Depending on your energy subscription, you can set prices through environment variables.
 
 ```sh
-export HP_KWH_PRICE "0.1657"
-export HC_KWH_PRICE "0.1249"
-export MONTHLY_SUBSCRIPTION_PRICE "14.34"
+export HP_KWH_PRICE=0.1657
+export HC_KWH_PRICE=0.1249
+export MONTHLY_SUBSCRIPTION_PRICE=14.34
 ```
 
 In my scenario, I use Grafana next to InfluxDB to visualize stored data:
 
-
 <p align="center">
     <img src="https://raw.githubusercontent.com/rsaikali/linkypy/main/img/grafana-screenshot.png" width="100%">
 </p>
-
 
 ## Docker build
 
