@@ -102,7 +102,7 @@ Only valuable information is stored:
 
 - `HCHP`: High price hours (heures pleines) values (in kWh).
 - `HCHC`: Low price hours (heures creuses) values (in kWh).
-- `PAPP`: Instant power delivered.
+- `PAPP`: Instant power delivered (in VA, but I personnaly assume it's watts, yes, even if it's not true that's enough for my understanding).
 
 Price calculation and estimation for current month will also be stored.
 Depending on your energy subscription, you can set prices through environment variables.
