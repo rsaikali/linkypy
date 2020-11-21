@@ -1,6 +1,13 @@
 # LinkyPy
 
+![PEP8](https://github.com/rsaikali/linkypy/workflows/PEP8/badge.svg)
+![Docker](https://github.com/rsaikali/linkypy/workflows/Docker/badge.svg)
+
 `LinkyPy` is intended to grab Linky (french dedicated energy meter) information through RaspberryPi USB port.
+
+<p align="center">
+    <img src="https://raw.githubusercontent.com/rsaikali/linkypy/main/img/grafana-screenshot.png" width="100%">
+</p>
 
 Default behaviour is to store data in an InfluxDB database, but it can be used as a standalone library as you can implement your own callback function.
 
