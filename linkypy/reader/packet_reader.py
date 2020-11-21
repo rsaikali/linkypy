@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 import datetime
-from collections import OrderedDict
-from string import printable
+import re
 
 import serial.threaded
-import _thread as thread
-
 import logging
+
+try:
+    import thread
+except ImportError:
+    import _thread as thread
 
 
 logger = logging.getLogger("linkypy")
-KEEP_ONLY_KEYS = ['HCHC', 'HCHP', 'PAPP']
 
 
 class LinkyPyChecksumError(Exception):
@@ -20,13 +21,14 @@ class LinkyPyChecksumError(Exception):
 class LinkyPyPacketReader(serial.threaded.Packetizer):
 
     TERMINATOR = b'\x03\x02'
+    callbacks = None
 
     def __init__(self, *args, **kwargs):
         super(LinkyPyPacketReader, self).__init__(*args, **kwargs)
 
     def handle_packet(self, packet):
         """
-        Compute a Linky packet from the serial connection. Launches a new thread to handle data.
+        Compute a Linky packet from the serial connection. Launches a new thread to handle data efficiently.
         """
         thread.start_new_thread(self.compute_packet, (packet, datetime.datetime.utcnow().isoformat()))
 
@@ -34,33 +36,22 @@ class LinkyPyPacketReader(serial.threaded.Packetizer):
         """
         Compute a Linky packet into a dictionary.
         """
-        logger.info("-" * 80)
-        logger.info("Timestamp: %s" % timestamp)
+        data = {}
 
-        # Remove unprintable characters
-        packet = ''.join(c for c in str(packet.decode("utf-8")).strip() if c in printable)
-
-        data = OrderedDict()
-
-        for line in packet.splitlines():
+        for line in packet.decode("utf-8").strip().splitlines():
             try:
                 key, value = self.compute_line(line)
-                if key is not None:
-                    data[key] = value
-            except ValueError:
-                continue
+                data[key] = value
             except Exception as e:
                 logger.error(e)
                 continue
 
-        # for plugin in self.plugins:
-        #     thread.start_new_thread(plugin.compute, (data.copy(), timestamp))
-
-        return data
+        for callback in LinkyPyPacketReader.callbacks:
+            callback(data, timestamp)
 
     def compute_line(self, line):
         """
-        Try to read the 3 fields in given line: key / value / cksum
+        Try to read the 3 fields in given line: key / value / checksum
 
         Compute checksum as implemented by Enedis.
 
@@ -68,8 +59,7 @@ class LinkyPyPacketReader(serial.threaded.Packetizer):
 
             Le principe du calcul du checksum est le suivant:
 
-                - calcul de la somme ``S1`` de tous les caractères allant du début du champ «Etiquette» jusqu’au délimiteur (inclus) entre les
-                  champs «Donnée» et «Checksum»).
+                - calcul de la somme ``S1`` de tous les caractères allant du début du champ «Etiquette» jusqu’au délimiteur (inclus) entre les champs «Donnée» et «Checksum»).
                 - cette somme déduite est tronquée sur 6 bits (cette opération est faite à l’aide d’un ET logique avec ``0x3F``).
                 - pour obtenir le checksum, on additionne le résultat précédent ``S2`` à ``0x20``.
 
@@ -83,19 +73,13 @@ class LinkyPyPacketReader(serial.threaded.Packetizer):
             en généralisation par Enedis <https://www.enedis.fr/sites/default/files/Enedis-NOI-CPT_54E.pdf>`_
 
         """
-        try:
-            key, value, checksum = line.split()
-            if key not in KEEP_ONLY_KEYS:
-                logger.info("%12s = %-15s [not flagged as kept]" % (key, value))
-                return None, None
-
-        except ValueError:
-            raise
+        key, value, checksum = re.split(' +', line)
+        checksum = ' ' if checksum == '' else checksum
 
         computed_checksum = (sum(bytearray(key + ' ' + value, encoding='ascii')) & 0x3F) + 0x20
         if chr(computed_checksum) != checksum:
             raise LinkyPyChecksumError("%12s = %-15s [invalid checksum '%s' != '%s']" % (key, value, checksum, chr(computed_checksum)))
 
-        logger.info("%12s = %-15s [checksum '%s' is OK, flagged as kept]" % (key, value, checksum))
+        logger.info("%12s = %-15s [checksum '%s' is OK]" % (key, value, checksum))
 
         return key, value
