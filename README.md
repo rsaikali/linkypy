@@ -13,8 +13,7 @@ Retrieved data is computed accordingly to the Enedis specifications (packets, ch
 2. A Linky energy meter with Teleinfo pins.
 
 <p align="center">
-    <img src="https://pbs.twimg.com/media/DhwX-daX4AIdzMv.jpg
-" width="300" height="300">
+    <img src="https://pbs.twimg.com/media/DhwX-daX4AIdzMv.jpg" width="300" height="300">
 </p>
 
 3. A [µTeleInfo](http://hallard.me/utinfo/) dongle. It is plugged in the RaspberryPi through USB port and connected to the Teleinfo Linky pins.
@@ -108,6 +107,11 @@ export MONTHLY_SUBSCRIPTION_PRICE "14.34"
 ```
 
 In my scenario, I use Grafana next to InfluxDB to visualize stored data:
+
+
+<p align="center">
+    <img src="https://raw.githubusercontent.com/rsaikali/linkypy/main/img/grafana-screenshot.png" width="100%">
+</p>
 
 
 ## Docker build
