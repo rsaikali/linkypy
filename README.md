@@ -134,4 +134,4 @@ docker buildx build --platform linux/arm/v7 -t <your-repo>/linkypy --push .
 
 ## Credits
 
-Charles @hallard (https://github.com/hallard) for the µTeleInfo USB dongle.
+Thank you to Charles (https://github.com/hallard) for the µTeleInfo USB dongle and documentation.
