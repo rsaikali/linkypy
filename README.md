@@ -5,10 +5,6 @@
 
 `LinkyPy` is intended to grab Linky (french dedicated energy meter) information through RaspberryPi USB port.
 
-<p align="center">
-    <img src="https://raw.githubusercontent.com/rsaikali/linkypy/main/img/grafana-screenshot.png" width="100%">
-</p>
-
 Default behaviour is to store data in an InfluxDB database, but it can be used as a standalone library as you can implement your own callback function.
 
 Retrieved data is computed accordingly to the Enedis specifications (packets, checksums...) available [here](https://www.enedis.fr/sites/default/files/Enedis-NOI-CPT_54E.pdf).
@@ -27,7 +23,7 @@ Retrieved data is computed accordingly to the Enedis specifications (packets, ch
 The USB dongle is available on [Tindie](https://www.tindie.com/products/hallard/micro-teleinfo-v20/).
 
 <p align="center">
-    <img src="https://cdn.tindiemedia.com/images/resize/1XAHka136c7xYxuU_YfAX4ssig4=/p/full-fit-in/2400x1600/i/5857/products/2018-06-08T13%3A23%3A25.397Z-MicroTeleinfo_Bottom_V2.png" width="300" height="300">
+    <img src="https://cdn.tindiemedia.com/images/resize/DCGyvSQz2JMzZUvVRCTSGKsgJ-4=/p/fit-in/1032x688/filters:fill(fff)/i/5857/products/2018-06-08T13%3A23%3A25.397Z-MicroTeleinfo_Top_V2.png" width="300">
 </p>
 
 
@@ -76,7 +72,7 @@ MOTDETAT = 000000
 (...)
 ```
 
-Detailed desciption of all fields is available in the [Enedis documentation](https://www.enedis.fr/sites/default/files/Enedis-NOI-CPT_54E.pdf)
+Detailed description of fields is available in the [Enedis documentation](https://www.enedis.fr/sites/default/files/Enedis-NOI-CPT_54E.pdf).
 
 ## Default InfluxDB behaviour
 
@@ -113,7 +109,8 @@ export HC_KWH_PRICE=0.1249
 export MONTHLY_SUBSCRIPTION_PRICE=14.34
 ```
 
-In my scenario, I use Grafana next to InfluxDB to visualize stored data:
+In my scenario, I use Grafana next to InfluxDB to visualize stored data.
+Have a look to my other Github project for an all-in-one RaspberryPi Kubernetes installer: [rsaikali/linkypy_k3s](https://github.com/rsaikali/linkypy_k3s). This includes LinkyPy, InfluxDB database and Grafana:
 
 <p align="center">
     <img src="https://raw.githubusercontent.com/rsaikali/linkypy/main/img/grafana-screenshot.png" width="100%">
@@ -135,4 +132,4 @@ docker buildx build --platform linux/arm/v7 -t <your-repo>/linkypy --push .
 
 ## Credits
 
-Charles (https://github.com/hallard) for the µTeleInfo USB dongle.
+Charles @hallard (https://github.com/hallard) for the µTeleInfo USB dongle.
