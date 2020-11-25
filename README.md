@@ -9,7 +9,7 @@ Default behaviour is to store data in an InfluxDB database, but it can be used a
 
 Retrieved data is computed accordingly to the Enedis specifications (packets, checksums...) available [here](https://www.enedis.fr/sites/default/files/Enedis-NOI-CPT_54E.pdf).
 
-Have a look to my other Github project for an all-in-one RaspberryPi Kubernetes installer: rsaikali/linkypy_k3s. This stack includes LinkyPy, InfluxDB database and Grafana.
+Have a look to my other Github project for an all-in-one RaspberryPi Kubernetes installer: [rsaikali/linkypy_k3s](https://github.com/rsaikali/linkypy_k3s). (this includes an easy to install LinkyPy, InfluxDB database and Grafana stack on your RaspberryPi).
 
 ## Hardware needed
 
