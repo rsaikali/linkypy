@@ -1,35 +1,50 @@
-# -*- coding: utf-8 -*-
 import logging
-import serial
-import click
 import os
+import click
+import serial
+from linkypy import CONF
 from linkypy.reader.packet_reader import LinkyPyPacketReader
-from linkypy.callback.influxdb_callback import InfluxDBCallback
 
-LINKY_PORT = os.getenv('LINKY_PORT', '/dev/ttyUSB0')
-LINKY_BAUDRATE = int(os.getenv('LINKY_BAUDRATE', 1200))
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(name)20s] %(levelname)8s %(message)s')
-logger = logging.getLogger("linkypy")
+logging.basicConfig(level=getattr(logging, CONF.linkypy.loglevel),
+                    format='%(asctime)s %(levelname)8s %(filename)24s %(message)s')
+logging.propagate = False
+logging.getLogger().setLevel(logging.WARN)
+
+logging.getLogger("urllib3").setLevel(logging.WARN)
+logging.getLogger("pdfminer").setLevel(logging.WARN)
+logging.getLogger("camelot").setLevel(logging.WARN)
+logging.getLogger("pdfplumber").setLevel(logging.WARN)
+logging.getLogger("ghostscript").setLevel(logging.WARN)
+logging.getLogger("linkypy").setLevel(getattr(logging, CONF.linkypy.loglevel))
+
+logger = logging.getLogger(__name__)
 
 
 @click.group()
 def linkypy():
     """LinkyPy command line utility."""
-    pass
+    logger.info("Using configuration file: %s" % CONF.config_file)
 
 
 @linkypy.command()
 def run():
-    """Launch LinkyPy reader."""
+    """Launch LinkyPy reader loop."""
 
-    lpr = LinkyPyPacketReader
-    lpr.callbacks = [InfluxDBCallback().callback]
+    # Get USB connection details through environment variables.
+    linky_port = os.getenv('LINKY_PORT', '/dev/ttyUSB0')
+    linky_baudrate = int(os.getenv('LINKY_BAUDRATE', 1200))
 
-    linky_serial_port = serial.serial_for_url(LINKY_PORT, LINKY_BAUDRATE,
+    logger.info("Connecting to Linky through USB dongle on %s (baudrate=%dbps)" % (linky_port, linky_baudrate))
+
+    # Connect to serial port.
+    linky_serial_port = serial.serial_for_url(linky_port, linky_baudrate,
                                               parity=serial.PARITY_EVEN,
                                               stopbits=serial.STOPBITS_ONE,
                                               bytesize=serial.SEVENBITS)
 
-    reader_thread = serial.threaded.ReaderThread(linky_serial_port, lpr)
+    logger.info("Connected to Linky: %s" % linky_serial_port.get_settings())
+
+    # Launch the reader thread
+    reader_thread = serial.threaded.ReaderThread(linky_serial_port, LinkyPyPacketReader)
     reader_thread.run()

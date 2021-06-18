@@ -1,0 +1,12 @@
+linkypy:
+
+    loglevel: INFO
+
+    callbacks:
+        - linkypy.callbacks.influxdb_callback.InfluxDBCallback
+        - linkypy.callbacks.prices_callback.PricesCallback
+
+    price_extractors:
+        - linkypy.prices_extractors.total_direct_energie.TotalDirectEnergiePriceExtractor
+        - linkypy.prices_extractors.edf.EDFPriceExtractor
+        - linkypy.prices_extractors.engie.EngiePriceExtractor

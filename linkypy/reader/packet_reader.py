@@ -1,53 +1,71 @@
 # -*- coding: utf-8 -*-
 import datetime
+import logging
 import re
 
 import serial.threaded
-import logging
-
 try:
-    import thread
+    import thread  # noqa
 except ImportError:
-    import _thread as thread
+    import _thread as thread  # noqa
 
+from linkypy.callbacks import get_callbacks
 
-logger = logging.getLogger("linkypy")
+logger = logging.getLogger(__name__)
 
 
 class LinkyPyChecksumError(Exception):
     pass
 
 
+class LinkyPyPacketError(Exception):
+    pass
+
+
 class LinkyPyPacketReader(serial.threaded.Packetizer):
 
     TERMINATOR = b'\x03\x02'
-    callbacks = None
 
     def __init__(self, *args, **kwargs):
         super(LinkyPyPacketReader, self).__init__(*args, **kwargs)
+        self.callbacks = []
+
+    def connection_made(self, transport):
+        super(LinkyPyPacketReader, self).connection_made(transport)
+
+        # Load callbacks from configuration file.
+        self.callbacks = get_callbacks()
+
+        logger.warn("First packet may have checksum errors as it is not complete.")
 
     def handle_packet(self, packet):
         """
-        Compute a Linky packet from the serial connection. Launches a new thread to handle data efficiently.
-        """
-        thread.start_new_thread(self.compute_packet, (packet, datetime.datetime.utcnow().isoformat()))
-
-    def compute_packet(self, packet, timestamp):
-        """
         Compute a Linky packet into a dictionary.
         """
+        logger.info("Received packet from Linky [%d characters]" % len(packet))
+        timestamp = datetime.datetime.utcnow().isoformat()
         data = {}
 
+        # Compute each line and fill a dictionary.
         for line in packet.decode("utf-8").strip().splitlines():
             try:
                 key, value = self.compute_line(line)
                 data[key] = value
+            except (LinkyPyChecksumError, LinkyPyPacketError) as lpe:
+                logger.error(lpe)
+                return data.copy()
             except Exception as e:
-                logger.error(e)
-                continue
+                logger.error(e, exc_info=True)
+                return data.copy()
 
-        for callback in LinkyPyPacketReader.callbacks:
-            callback(data, timestamp)
+        # Compute data through each declared callback
+        for callback in self.callbacks:
+            try:
+                callback.compute(data.copy(), timestamp)
+            except LinkyPyChecksumError:
+                logger.error("An error occured.", exc_info=True)
+
+        return data.copy()
 
     def compute_line(self, line):
         """
@@ -73,13 +91,23 @@ class LinkyPyPacketReader(serial.threaded.Packetizer):
             en généralisation par Enedis <https://www.enedis.fr/sites/default/files/Enedis-NOI-CPT_54E.pdf>`_
 
         """
-        key, value, checksum = re.split(' +', line)
-        checksum = ' ' if checksum == '' else checksum
+        # Split line with spaces.
+        try:
+            key, value, checksum = re.split(' +', line)
 
-        computed_checksum = (sum(bytearray(key + ' ' + value, encoding='ascii')) & 0x3F) + 0x20
+            # Fix checksum if it was a space. Not nice, will see later how to do better.
+            checksum = ' ' if checksum == '' else checksum
+
+            # Compute checksum following Enedis specifications.
+            computed_checksum = (sum(bytearray(key + ' ' + value, encoding='ascii')) & 0x3F) + 0x20
+        except Exception:
+            raise LinkyPyPacketError("Invalid line received: [%s]" % line)
+
+        # If checksum is incorrect, raise error.
         if chr(computed_checksum) != checksum:
             raise LinkyPyChecksumError("%12s = %-15s [invalid checksum '%s' != '%s']" % (key, value, checksum, chr(computed_checksum)))
 
-        logger.info("%12s = %-15s [checksum '%s' is OK]" % (key, value, checksum))
+        logger.debug("%12s = %-15s [checksum '%s' is OK]" % (key, value, checksum))
 
+        # Return key and value if checksum is correct.
         return key, value
