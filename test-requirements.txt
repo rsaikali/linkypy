@@ -1,0 +1,10 @@
+tox
+nose
+nose-parameterized
+nose-timer
+rednose
+mock
+flake8
+coverage
+sphinx-rtd-theme
+Sphinx

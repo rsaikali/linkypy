@@ -29,33 +29,38 @@ The USB dongle is available on [Tindie](https://www.tindie.com/products/hallard/
 </p>
 
 
-## Make your own callback
+## Make your own plugin
 
-First prepare your own callback, here it will print Linky information:
+This is a sample plugin class, here we will print Linky information:
 
 ```python
-    def my_callback(data, timestamp):
+class MyPlugin(object):
+
+    def compute(self, data, timestamp):
         print(timestamp)
         for key, value in data.items():
             print(f"{key} = {value}")
 ```
 
-Then plug your callback into the `LinkyPyPacketReader` (you can attach multiple callbacks):
+Then add your plugin declaration in the configuration file `/etc/linkypy/linkypy.yaml`:
 
-```python
-    import serial
-    from linkypy.reader.packet_reader import LinkyPyPacketReader
+```yaml
+linkypy:
 
-    lpr = LinkyPyPacketReader
-    lpr.callbacks = [my_callback]
+    (...)
 
-    linky_serial_port = serial.serial_for_url("/dev/ttyUSB0", 1200, parity=serial.PARITY_EVEN, stopbits=serial.STOPBITS_ONE, bytesize=serial.SEVENBITS)
+    plugins:
+        - linkypy.plugins.influxdb_plugin.InfluxDBPlugin
+        - your_package.MyPlugin
 
-    reader_thread = serial.threaded.ReaderThread(linky_serial_port, lpr)
-    reader_thread.run()
+    (...)
 ```
 
-You can now launch your script:
+You can now launch `linkypy`:
+
+```sh
+linkypy run
+```
 
 ```sh
 (...)
