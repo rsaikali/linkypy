@@ -28,6 +28,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 COPY ./requirements.txt /opt/linkypy/requirements.txt
+RUN pip3 install --no-cache-dir pbr
 RUN pip3 install --no-cache-dir -r /opt/linkypy/requirements.txt
 
 COPY . /opt/linkypy

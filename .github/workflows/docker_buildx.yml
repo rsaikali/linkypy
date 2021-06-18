@@ -13,7 +13,7 @@ jobs:
         with:
           imageName: rsaikali/linkypy
           platform: linux/arm/v7
-          dockerHubUser: ${{ secrets.DOCKER_HUB_LOGIN }}
-          dockerHubPassword: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          dockerUser: ${{ secrets.DOCKER_HUB_LOGIN }}
+          dockerPassword: ${{ secrets.DOCKER_HUB_PASSWORD }}
           publish: true
 
