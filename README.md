@@ -49,8 +49,8 @@ linkypy:
 
     (...)
 
-    plugins:
-        - linkypy.plugins.influxdb_plugin.InfluxDBPlugin
+    callbacks:
+        - linkypy.callbacks.influxdb_plugin.InfluxDBPlugin
         - your_package.MyPlugin
 
     (...)
@@ -108,19 +108,14 @@ Only valuable information is stored:
 - `PAPP`: Instant power delivered (in VA, but I personnaly assume it's watts, yes, even if it's not true that's enough for my understanding).
 
 Price calculation and estimation for current month will also be stored.
-Depending on your energy subscription, you can set prices through environment variables.
 
-```sh
-export HP_KWH_PRICE=0.1657
-export HC_KWH_PRICE=0.1249
-export MONTHLY_SUBSCRIPTION_PRICE=14.34
-```
+Prices are now extracted from energy providers websites (PDF).
 
 In my scenario, I use Grafana next to InfluxDB to visualize stored data.
 Have a look to my other Github project for an all-in-one RaspberryPi Kubernetes installer: [rsaikali/linkypy_k3s](https://github.com/rsaikali/linkypy_k3s). This includes LinkyPy, InfluxDB database and Grafana:
 
 <p align="center">
-    <img src="https://raw.githubusercontent.com/rsaikali/linkypy/main/img/grafana-screenshot.png" width="100%">
+    <img src="https://raw.githubusercontent.com/rsaikali/linkypy/main/img/grafana-screenshot.jpg" width="100%">
 </p>
 
 ## Docker build
