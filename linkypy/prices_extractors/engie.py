@@ -27,6 +27,8 @@ class EngiePriceExtractor(BasePriceExtractor):
 
     def __init__(self):
 
+        super().__init__()
+
         self.provider_name = "Engie"
 
         # Preload PDFs

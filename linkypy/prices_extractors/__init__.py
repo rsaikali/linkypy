@@ -15,7 +15,7 @@ def get_price_extractors():
             module_name, class_name = price_extractor.rsplit(".", 1)
             klass = getattr(importlib.import_module(module_name), class_name)
             pes.append(klass())
-        except (ImportError, AttributeError) as e:
+        except Exception as e:
             logger.error("An error occured while loading price extractor '%s': %s" % (price_extractor, str(e)))
             continue
     return pes

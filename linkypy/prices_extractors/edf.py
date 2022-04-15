@@ -2,12 +2,12 @@ import logging
 import os
 import uuid
 from multiprocessing.dummy import Pool as ThreadPool
-from linkypy.prices_extractors.base import BasePriceExtractor
 
 import camelot
 import pandas as pd
 import requests
 from cachetools import TTLCache, cached
+from linkypy.prices_extractors.base import BasePriceExtractor
 
 logger = logging.getLogger(__name__)
 
@@ -21,13 +21,14 @@ class EDFPriceExtractor(BasePriceExtractor):
     PDFS = {
         "bleu": "https://particulier.edf.fr/content/dam/2-Actifs/Documents/Offres/Grille_prix_Tarif_Bleu.pdf",
         "vert": "https://particulier.edf.fr/content/dam/2-Actifs/Documents/Offres/grille-prix-vert-electrique.pdf",
-        # "vert_bretagne": "https://particulier.edf.fr/content/dam/2-Actifs/Documents/Offres/grille-prix-vert-electrique-regional.pdf"
 
     }
     OFFER_NAMES = PDFS.keys()
     OFFER_TYPES = ('BASE', 'HPHC')
 
     def __init__(self):
+
+        super().__init__()
 
         self.provider_name = "EDF"
 

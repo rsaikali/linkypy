@@ -3,7 +3,6 @@ import os
 import uuid
 from multiprocessing.dummy import Pool as ThreadPool
 from linkypy.prices_extractors.base import BasePriceExtractor
-
 import pdfplumber
 import requests
 from cachetools import TTLCache, cached
@@ -20,12 +19,13 @@ class TotalDirectEnergiePriceExtractor(BasePriceExtractor):
     PDFS = {
         "classique": "https://total.direct-energie.com/fileadmin/Digital/Documents-contractuels/GT/grille-tarifaire-classique-particuliers.pdf",
         "online": "https://total.direct-energie.com/fileadmin/Digital/Documents-contractuels/GT/grille-tarifaire-online-particuliers.pdf",
-        "verte": "https://total.direct-energie.com/fileadmin/Digital/Documents-contractuels/GT/grille-tarifaire-verte-particuliers.pdf",
     }
     OFFER_NAMES = PDFS.keys()
     OFFER_TYPES = ('BASE', 'HPHC')
 
     def __init__(self):
+
+        super().__init__()
 
         self.provider_name = "Total Direct Energie"
 
@@ -82,11 +82,11 @@ class TotalDirectEnergiePriceExtractor(BasePriceExtractor):
                 if offer_type == "BASE":
                     power = line[0]
                     if power is not None:
-                        data.append(line[:7])
+                        data.append(line[:8])
                 elif offer_type == "HPHC":
                     power = line[7]
                     if power is not None:
-                        data.append(line[7:])
+                        data.append(line[8:])
 
         for i, line in enumerate(data):
             for j, item in enumerate(line):
@@ -95,6 +95,7 @@ class TotalDirectEnergiePriceExtractor(BasePriceExtractor):
 
         prices = {}
         for line in data:
+            print(line)
             prices[int(line[0].split()[0])] = line
 
         return prices
@@ -109,15 +110,15 @@ class TotalDirectEnergiePriceExtractor(BasePriceExtractor):
             if offer_type == "BASE":
                 return {
                     'MONTHLY_SUBSCRIPTION_PRICE': float(line[2].replace(',', '.')),
-                    'HP_KWH_PRICE': float(line[6].replace(',', '.')),
-                    'HC_KWH_PRICE': float(line[6].replace(',', '.'))
+                    'HP_KWH_PRICE': float(line[-1].replace(',', '.')),
+                    'HC_KWH_PRICE': float(line[-1].replace(',', '.'))
 
                 }
             elif offer_type == "HPHC":
                 return {
                     'MONTHLY_SUBSCRIPTION_PRICE': float(line[2].replace(',', '.')),
-                    'HP_KWH_PRICE': float(line[6].replace(',', '.')),
-                    'HC_KWH_PRICE': float(line[10].replace(',', '.'))
+                    'HP_KWH_PRICE': float(line[7].replace(',', '.')),
+                    'HC_KWH_PRICE': float(line[12].replace(',', '.'))
                 }
 
         except Exception:
