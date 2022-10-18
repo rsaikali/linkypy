@@ -17,8 +17,9 @@ cache = TTLCache(maxsize=128, ttl=ttl)
 class TotalDirectEnergiePriceExtractor(BasePriceExtractor):
 
     PDFS = {
-        "classique": "https://total.direct-energie.com/fileadmin/Digital/Documents-contractuels/GT/grille-tarifaire-classique-particuliers.pdf",
-        "online": "https://total.direct-energie.com/fileadmin/Digital/Documents-contractuels/GT/grille-tarifaire-online-particuliers.pdf",
+        "classique": "https://www.totalenergies.fr/fileadmin/Digital/Documents-contractuels/GT/grille-tarifaire-classique-particuliers.pdf",
+        "online": "https://www.totalenergies.fr/fileadmin/Digital/Documents-contractuels/GT/grille-tarifaire-online-particuliers.pdf",
+
     }
     OFFER_NAMES = PDFS.keys()
     OFFER_TYPES = ('BASE', 'HPHC')
@@ -30,7 +31,7 @@ class TotalDirectEnergiePriceExtractor(BasePriceExtractor):
         self.provider_name = "Total Direct Energie"
 
         # Preload PDFs
-        pool = ThreadPool()
+        pool = ThreadPool(1)
         _ = pool.map(self.download_pdf, TotalDirectEnergiePriceExtractor.PDFS.values())
         pool.close()
         pool.join()
@@ -46,9 +47,11 @@ class TotalDirectEnergiePriceExtractor(BasePriceExtractor):
 
         logger.info("Updating prices cache from %s" % url)
         tmp_output = os.path.join("/tmp/%s.pdf" % str(uuid.uuid5(uuid.NAMESPACE_DNS, url)))
+        headers = {"user-agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:81.0) Gecko/20100101 Firefox/81.0"}
+
         with open(tmp_output, 'wb') as f:
             # Downloading PDF file
-            f.write(requests.get(url).content)
+            f.write(requests.get(url, headers=headers).content)
 
         # Load PDF file
         pdf = pdfplumber.open(tmp_output)
@@ -95,7 +98,6 @@ class TotalDirectEnergiePriceExtractor(BasePriceExtractor):
 
         prices = {}
         for line in data:
-            print(line)
             prices[int(line[0].split()[0])] = line
 
         return prices

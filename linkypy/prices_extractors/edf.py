@@ -33,7 +33,7 @@ class EDFPriceExtractor(BasePriceExtractor):
         self.provider_name = "EDF"
 
         # Preload PDFs
-        pool = ThreadPool()
+        pool = ThreadPool(1)
         _ = pool.map(self.download_from_provider, EDFPriceExtractor.PDFS.values())
         pool.close()
         pool.join()
@@ -49,10 +49,11 @@ class EDFPriceExtractor(BasePriceExtractor):
 
         logger.info("Updating prices cache from %s" % url)
         tmp_output = os.path.join("/tmp/%s.pdf" % str(uuid.uuid5(uuid.NAMESPACE_DNS, url)))
+        headers = {"user-agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:81.0) Gecko/20100101 Firefox/81.0"}
 
         with open(tmp_output, 'wb') as f:
             # Downloading PDF file
-            f.write(requests.get(url).content)
+            f.write(requests.get(url, headers=headers).content)
 
         # Get tables from PDF
         tables = camelot.read_pdf(tmp_output)
