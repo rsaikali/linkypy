@@ -4,6 +4,7 @@ import click
 import serial
 from linkypy import CONF
 from linkypy.reader.packet_reader import LinkyPyPacketReader
+from linkypy.prices_extractors import get_price_extractors
 
 
 logging.basicConfig(level=getattr(logging, CONF.linkypy.loglevel),
@@ -48,3 +49,14 @@ def run():
     # Launch the reader thread
     reader_thread = serial.threaded.ReaderThread(linky_serial_port, LinkyPyPacketReader)
     reader_thread.run()
+
+
+@linkypy.command()
+def prices():
+    """Get prices from extractors."""
+    prices_extractors = get_price_extractors()
+
+    for prices_extractor in prices_extractors:
+        for offer_name in prices_extractor.get_available_offers_names():
+            for offer_type in prices_extractor.get_available_offers_types():
+                print(prices_extractor.__class__.__name__, offer_name, offer_type, prices_extractor.get_prices(offer_name, offer_type, 9))
